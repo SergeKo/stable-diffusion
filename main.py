@@ -20,6 +20,20 @@ from pytorch_lightning.utilities import rank_zero_info
 from ldm.data.base import Txt2ImgIterableBaseDataset
 from ldm.util import instantiate_from_config
 
+from torch import autocast
+from diffusers import StableDiffusionPipeline, LMSDiscreteScheduler
+
+model_id = "CompVis/stable-diffusion-v1-4"
+# Use the K-LMS scheduler here instead
+scheduler = LMSDiscreteScheduler(beta_start=0.00085, beta_end=0.012, beta_schedule="scaled_linear", num_train_timesteps=1000)
+pipe = StableDiffusionPipeline.from_pretrained(model_id, scheduler=scheduler, use_auth_token=True)
+pipe = pipe.to("cuda")
+
+pipe = StableDiffusionPipeline.from_pretrained(model_id, torch_dtype=torch.float16, use_auth_token=True)
+pipe = pipe.to(device)
+
+pipe = StableDiffusionPipeline.from_pretrained(model_id, use_auth_token=True)
+pipe = pipe.to(device)
 
 def get_parser(**parser_kwargs):
     def str2bool(v):
